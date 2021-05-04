@@ -1,0 +1,25 @@
+version: "3"
+services:
+  reactionary_db:
+    container_name: "reactionary-database"
+    image: "postgres" # use latest official postgres version
+    ports:
+      - "5435:5435"
+    env_file:
+      - .env
+    volumes:
+      - reactionary-database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+    command: -p 5435
+  reactionary_broker:
+    container_name: "reactionary-broker"
+    image: "redis"
+    ports:
+      - "6379:6379"
+    env_file:
+      - .env
+    volumes:
+      - reactionary-broker-data:/var/lib/redis/data/
+    command: redis-server
+volumes:
+  reactionary-database-data: # named volumes can be managed easier using docker-compose
+  reactionary-broker-data: # named volumes can be managed easier using docker-compose

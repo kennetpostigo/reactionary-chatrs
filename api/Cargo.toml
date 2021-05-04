@@ -1,0 +1,24 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.40"
+async-std = { version = "1.9.0", features = ["attributes"] }
+async-trait = "0.1.50"
+chrono = "0.4.19"
+dotenv = "0.15.0"
+futures = "0.3.14"
+futures-util = "0.3.14"
+jsonwebtoken = "7.2.0"
+lazy_static = "1.4.0"
+redis = { version = "0.20.0", features = ["async-std-comp"] }
+serde = "1.0.125"
+serde_json = "1.0.64"
+sqlx = { version = "0.5.2", features = [ "runtime-async-std-native-tls", "postgres", "chrono", "migrate", "uuid", "json" ] }
+tide = "0.16.0"
+tide-websockets = "0.3.0"
+uuid ={ version = "0.8.2", features = [ "serde" ]}
