@@ -3,15 +3,17 @@ use crate::channel::PartialChannel;
 use crate::message;
 use crate::message::PartialMessage;
 use crate::{State, User};
+use async_std::sync::{Arc, RwLock};
 use futures_util::future::Either;
 use futures_util::StreamExt;
 use redis::{AsyncCommands, FromRedisValue, RedisResult, Value as RedisValue};
+use sqlx::{Pool, Postgres};
 use tide::prelude::*;
 use tide::{Request, Server};
 use tide_websockets::{Message as WSMessage, WebSocket, WebSocketConnection};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-enum MsgType {
+pub enum MsgType {
   UserConnection,
   UserDisconnection,
   NewChannel,
@@ -24,11 +26,22 @@ enum MsgType {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct SockMsg {
-  _type: MsgType,
-  message: Option<PartialMessage>,
-  channel: Option<PartialChannel>,
-  user: Option<User>,
+pub struct SockMsg {
+  pub _type: MsgType,
+  pub message: Option<PartialMessage>,
+  pub channel: Option<PartialChannel>,
+  pub user: Option<User>,
+}
+
+#[derive(Debug, Clone)]
+pub struct RedisMsg {
+  pub _type: MsgType,
+  pub message: Option<PartialMessage>,
+  pub channel: Option<PartialChannel>,
+  pub user: Option<User>,
+  pub users: Arc<RwLock<Vec<User>>>,
+  pub db: Pool<Postgres>,
+  pub ws: WebSocketConnection,
 }
 
 impl FromRedisValue for SockMsg {

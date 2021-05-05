@@ -6,6 +6,8 @@ pub mod helpers;
 pub mod message;
 pub mod socket;
 
+use async_channel::{Sender};
+use broker::IntermediaryMsg;
 use crate::broker::create_connection;
 use crate::db::create_connection_pool;
 use crate::helpers::cors_middleware;
@@ -27,7 +29,7 @@ pub struct User {
 pub struct State {
   db: Pool<Postgres>,
   broker: MultiplexedConnection,
-  pubsub: Arc<RwLock<PubSub>>,
+  pubsub: Sender<IntermediaryMsg>,
   wsc: Arc<RwLock<Option<WebSocketConnection>>>,
   users: Arc<RwLock<Vec<User>>>,
 }
@@ -35,13 +37,13 @@ pub struct State {
 impl State {
   pub fn new(
     db: Pool<Postgres>,
-    broker: (MultiplexedConnection, PubSub),
+    broker: (MultiplexedConnection, Sender<IntermediaryMsg>),
   ) -> Self {
     let (broker, pubsub) = broker;
     State {
       db,
       broker,
-      pubsub: Arc::new(RwLock::new(pubsub)),
+      pubsub,
       wsc: Arc::new(RwLock::new(None)),
       users: Arc::new(RwLock::new(vec![])),
     }
