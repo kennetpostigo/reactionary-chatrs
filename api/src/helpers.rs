@@ -1,7 +1,7 @@
-use crate::State;
 use tide::http::headers::HeaderValue;
 use tide::security::{CorsMiddleware, Origin};
 use tide::Server;
+use crate::State;
 
 pub fn cors_middleware(mut app: Server<State>) -> Server<State> {
   let cors = CorsMiddleware::new()
