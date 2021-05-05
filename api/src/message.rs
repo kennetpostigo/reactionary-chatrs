@@ -84,3 +84,33 @@ pub async fn create_message(
     Err(e) => Err(e.into()),
   }
 }
+
+pub async fn update_message(
+  message: PartialMessage,
+  db: &Pool<Postgres>,
+) -> Result<Message> {
+  let update_message: Result<Message, sqlx::Error> = query_as!(
+    Message,
+    "UPDATE messages
+        SET content = $1 
+      WHERE id = $2
+      RETURNING
+        id,
+        idx,
+        username,
+        content,
+        channel_id,
+        created_at,
+        updated_at
+      ;",
+    message.content,
+    message.id
+  )
+  .fetch_one(db)
+  .await;
+
+  match update_message {
+    Ok(msg) => Ok(msg),
+    Err(e) => Err(e.into()),
+  }
+}

@@ -2,7 +2,7 @@ import Icon from "@chakra-ui/icon";
 import { Box, Heading, ListItem, Text, UnorderedList } from "@chakra-ui/layout";
 import { useRouter } from "next/router";
 import { FiHash } from "react-icons/fi";
-import useChatStore from "../../hooks/store";
+import useChatStore from "../../hooks/useChatStore";
 import Link from "../atoms/Link";
 
 interface Message {
@@ -15,7 +15,7 @@ interface MessageFeedProps {
 }
 
 const MessageFeed: React.FC<MessageFeedProps> = ({}) => {
-  const { query } = useRouter();
+  const activeChannel = useChatStore((state) => state.channel);
   const feed = useChatStore((state) => state.messages);
 
   return (
@@ -26,9 +26,9 @@ const MessageFeed: React.FC<MessageFeedProps> = ({}) => {
       flex="1"
       overflow="scroll"
     >
-      <UnorderedList listStyleType="none" margin="0px" padding="0px">\
+      <UnorderedList listStyleType="none" margin="0px" padding="0px">
         {/* @ts-ignore */}
-        {feed?.[query.channel]?.map((message) => (
+        {feed?.[activeChannel]?.map((message) => (
           <ListItem
             key={message.id}
             height="50px"

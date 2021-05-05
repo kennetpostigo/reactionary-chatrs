@@ -1,16 +1,14 @@
-import Icon from "@chakra-ui/icon";
-import { Input } from "@chakra-ui/input";
 import { Box, Heading, ListItem, Text, UnorderedList } from "@chakra-ui/layout";
 import { Textarea } from "@chakra-ui/textarea";
-import { useRouter } from "next/router";
 import { useState } from "react";
-import useChatStore from "../../hooks/store";
+import useChatStore from "../../hooks/useChatStore";
 
 interface ChatBoxProps {}
 
 const ChatBox: React.FC<ChatBoxProps> = ({}) => {
-  const { query } = useRouter();
   const ws: any = useChatStore((state) => state.ws);
+  const me = useChatStore((state) => state.me);
+  const activeChannel = useChatStore((state) => state.channel);
   const channels: any = useChatStore((state) => state.channels);
   const [v, setV] = useState(() => "");
   return (
@@ -38,10 +36,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({}) => {
                 JSON.stringify({
                   _type: "NewMessage",
                   message: {
-                    username: "kpo",
+                    username: me,
                     content: v,
-                    channel_id: channels.find((c) => c.name === query.channel)
-                      .id,
+                    channel_id: activeChannel,
                   },
                 })
               );

@@ -11,7 +11,6 @@ use tide_websockets::{Message as WSMessage, WebSocket, WebSocketConnection};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 enum MsgType {
   UserConnection,
-  UserDisconnection,
   NewChannel,
   RetrieveChannels,
   RetrieveChannelMessages,
@@ -58,40 +57,68 @@ async fn mount_ws(
           }))
           .await?
       }
-      MsgType::UserDisconnection => {
-        let users = &req.state().users;
-        let mut users = users.write().await;
-        let old_user = msg.user.unwrap();
-        let index = users
-          .iter()
-          .position(|user| user.username == old_user.username)
-          .unwrap();
-        users.remove(index);
-
-        wsc
-          .send_json(&json!({
-            "msg": format!("{} has been disconnected", &old_user.username)
-          }))
-          .await?
-      }
       MsgType::NewChannel => {
         let channel =
           channel::create_channel(msg.channel.unwrap(), &req.state().db)
             .await?;
+        let users = &req.state().users.read().await;
+        let users = users.iter();
+        for user in users {
+          let handle = user
+            .handle
+            .send_json(&json!({
+              "msg": format!("{} channel has been created", &channel.name),
+              "data": {
+                "channel": channel
+              }
+            }))
+            .await;
+
+          match handle {
+            Ok(_) => (),
+            Err(e) => println!("{}", e),
+          }
+        }
+      }
+      MsgType::RetrieveChannels => {
+        let channels = channel::get_channels(&req.state().db).await?;
+        let new_user = msg.user.unwrap();
+        let new_user = WSUser {
+          id: new_user.id,
+          username: new_user.username,
+          handle: wsc.clone(),
+        };
         wsc
           .send_json(&json!({
-            "msg": format!("{} channel has been created", &channel.name),
+            "msg": format!("{} has been connected", &new_user.username),
             "data": {
-              "channel": channel
+              "channels": channels
             }
           }))
           .await?
       }
-      MsgType::RetrieveChannels => {
-        wsc.send_json(&json!({ "hello": "world" })).await?;
-      }
       MsgType::UpdateChannel => {
-        wsc.send_json(&json!({ "hello": "world" })).await?;
+        let channel =
+          channel::update_channel(msg.channel.unwrap(), &req.state().db)
+            .await?;
+        let users = &req.state().users.read().await;
+        let users = users.iter();
+        for user in users {
+          let handle = user
+            .handle
+            .send_json(&json!({
+              "msg": format!("{} channel has been updated", &channel.name),
+              "data": {
+                "channel": channel
+              }
+            }))
+            .await;
+
+          match handle {
+            Ok(_) => (),
+            Err(e) => println!("{}", e),
+          }
+        }
       }
       MsgType::RetrieveChannelMessages => {
         let channel = msg.clone().channel.unwrap();
@@ -119,10 +146,10 @@ async fn mount_ws(
         let message =
           message::create_message(new_message.clone(), &req.state().db).await?;
 
-        let  users = &req.state().users.read().await;
+        let users = &req.state().users.read().await;
         let users = users.iter();
         for user in users {
-          user
+          let handle = user
             .handle
             .send_json(&json!({
               "msg": "New message recieved",
@@ -133,11 +160,40 @@ async fn mount_ws(
                 }
               }
             }))
-            .await?
+            .await;
+
+          match handle {
+            Ok(_) => (),
+            Err(e) => println!("ERR: {}", e),
+          }
         }
       }
       MsgType::UpdateMessage => {
-        wsc.send_json(&json!({ "hello": "world" })).await?;
+        let new_message = msg.clone().message.unwrap();
+        let message =
+          message::update_message(new_message.clone(), &req.state().db).await?;
+
+        let users = &req.state().users.read().await;
+        let users = users.iter();
+        for user in users {
+          let handle = user
+            .handle
+            .send_json(&json!({
+              "msg": "message update recieved",
+              "data": {
+                "message": {
+                  "channel": &new_message.channel_id,
+                  "message": message
+                }
+              }
+            }))
+            .await;
+
+          match handle {
+            Ok(_) => (),
+            Err(e) => println!("{}", e),
+          }
+        }
       }
       MsgType::DeleteMessage => {
         wsc.send_json(&json!({ "hello": "world" })).await?;

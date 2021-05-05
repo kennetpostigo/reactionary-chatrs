@@ -4,7 +4,7 @@ import { Input } from "@chakra-ui/input";
 import { Box, Heading, ListItem, Text, UnorderedList } from "@chakra-ui/layout";
 import { useState } from "react";
 import { FiHash } from "react-icons/fi";
-import useChatStore from "../../hooks/store";
+import useChatStore from "../../hooks/useChatStore";
 import Link from "../atoms/Link";
 
 interface Channel {
@@ -18,10 +18,11 @@ interface ChannelsProps {
 
 const Channels: React.FC<ChannelsProps> = ({}) => {
   const [c, setC] = useState(() => "");
+  const [u, setU] = useState(() => "");
   const actions: any = useChatStore((state) => state.actions);
   const ws: any = useChatStore((state) => state.ws);
   const channels: any = useChatStore((state) => state.channels);
-  
+
   return (
     <Box
       display="flex"
@@ -31,16 +32,40 @@ const Channels: React.FC<ChannelsProps> = ({}) => {
       bg="blackAlpha.300"
       padding="10px"
     >
-      <Heading as="h4" mb="0px" pb="0px">
-        Channels
-      </Heading>
+      {
+        <>
+          <Text as="h5" mb="0px" pb="0px">
+            Set your username
+          </Text>
+          <Input
+            placeholder="username"
+            value={u}
+            onChange={(e) => setU(e.target.value)}
+          />
+          <Button
+            onClick={(_e) => {
+              ws.send(
+                JSON.stringify({
+                  _type: "UserConnection",
+                  user: {
+                    id: u.length,
+                    username: u,
+                  },
+                })
+              );
+            }}
+          >
+            Connect
+          </Button>
+        </>
+      }
       <Input
         placeholder="channel name"
         value={c}
         onChange={(e) => setC(e.target.value)}
       />
       <Button
-        onClick={(e) => {
+        onClick={(_e) => {
           ws.send(
             JSON.stringify({ _type: "NewChannel", channel: { name: c } })
           );
@@ -68,6 +93,7 @@ const Channels: React.FC<ChannelsProps> = ({}) => {
               alignItems="center"
               href={`/?channel=${channel.name}`}
               onClick={() => {
+                actions.setChannel(channel.id);
                 ws.send(
                   JSON.stringify({
                     _type: "RetrieveChannelMessages",
