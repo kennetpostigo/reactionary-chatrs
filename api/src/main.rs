@@ -6,15 +6,15 @@ pub mod helpers;
 pub mod message;
 pub mod socket;
 
-use async_channel::{Sender};
-use broker::IntermediaryMsg;
 use crate::broker::create_connection;
 use crate::db::create_connection_pool;
 use crate::helpers::cors_middleware;
 use anyhow::Result;
+use async_channel::Sender;
 use async_std::sync::{Arc, RwLock};
+use broker::InterMsg;
 use dotenv::dotenv;
-use redis::aio::{MultiplexedConnection, PubSub};
+use redis::aio::MultiplexedConnection;
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 use tide_websockets::WebSocketConnection;
@@ -29,7 +29,7 @@ pub struct User {
 pub struct State {
   db: Pool<Postgres>,
   broker: MultiplexedConnection,
-  pubsub: Sender<IntermediaryMsg>,
+  pubsub: Sender<InterMsg>,
   wsc: Arc<RwLock<Option<WebSocketConnection>>>,
   users: Arc<RwLock<Vec<User>>>,
 }
@@ -37,7 +37,7 @@ pub struct State {
 impl State {
   pub fn new(
     db: Pool<Postgres>,
-    broker: (MultiplexedConnection, Sender<IntermediaryMsg>),
+    broker: (MultiplexedConnection, Sender<InterMsg>),
   ) -> Self {
     let (broker, pubsub) = broker;
     State {
@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
   dotenv().ok();
 
   let db = create_connection_pool().await?;
-  let broker = create_connection().await?;
+  let broker = create_connection(db.clone()).await?;
   let app = tide::with_state(State::new(db, broker));
   let app = cors_middleware(app);
   let app = socket::mount(app);
