@@ -1,44 +1,47 @@
-import Icon from "@chakra-ui/icon";
-import { Box, Heading, ListItem, Text, UnorderedList } from "@chakra-ui/layout";
-import { useRouter } from "next/router";
-import { FiHash } from "react-icons/fi";
+import { Box, ListItem, Text, UnorderedList } from "@chakra-ui/layout";
 import useChatStore from "../../hooks/useChatStore";
-import Link from "../atoms/Link";
 
-interface Message {
-  id: string;
-  content: string;
-}
-
-interface MessageFeedProps {
-  feed?: Array<Message>;
-}
+interface MessageFeedProps {}
 
 const MessageFeed: React.FC<MessageFeedProps> = ({}) => {
+  const me = useChatStore((state) => state.me as string);
   const activeChannel = useChatStore((state) => state.channel);
   const feed = useChatStore((state) => state.messages);
 
   return (
     <Box
+      overflow="auto"
       display="flex"
-      flexDirection="column"
-      width="100%"
+      flexDirection="column-reverse"
       flex="1"
-      overflow="scroll"
+      width="100%"
     >
-      <UnorderedList listStyleType="none" margin="0px" padding="0px">
-        {/* @ts-ignore */}
+      <UnorderedList listStyleType="none" margin="0px" padding="20px 10px">
         {feed?.[activeChannel]?.map((message) => (
           <ListItem
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
             key={message.id}
-            height="50px"
+            height="55px"
             padding="10px"
+            borderRadius="0.375rem"
             _hover={{
               transition: "0.25s background",
               bg: "whiteAlpha.50",
             }}
           >
-            <Text fontWeight="600">{message.content}</Text>
+            <Text
+              margin="0px"
+              padding="0px"
+              fontWeight="bold"
+              color={message.username === me ? "green.600" : "blue.600"}
+            >
+              {message.username}
+            </Text>
+            <Text margin="0px" padding="0px" fontWeight="500">
+              {message.content}
+            </Text>
           </ListItem>
         ))}
       </UnorderedList>

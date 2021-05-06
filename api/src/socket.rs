@@ -17,7 +17,6 @@ enum MsgType {
   UpdateChannel,
   NewMessage,
   UpdateMessage,
-  DeleteMessage,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -194,9 +193,6 @@ async fn mount_ws(
             Err(e) => println!("{}", e),
           }
         }
-      }
-      MsgType::DeleteMessage => {
-        wsc.send_json(&json!({ "hello": "world" })).await?;
       }
     }
   }

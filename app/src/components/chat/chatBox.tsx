@@ -1,16 +1,16 @@
 import { Box, Heading, ListItem, Text, UnorderedList } from "@chakra-ui/layout";
-import { Textarea } from "@chakra-ui/textarea";
+import { Input } from "@chakra-ui/input";
 import { useState } from "react";
 import useChatStore from "../../hooks/useChatStore";
 
 interface ChatBoxProps {}
 
 const ChatBox: React.FC<ChatBoxProps> = ({}) => {
-  const ws: any = useChatStore((state) => state.ws);
+  const ws = useChatStore((state) => state.ws);
   const me = useChatStore((state) => state.me);
   const activeChannel = useChatStore((state) => state.channel);
-  const channels: any = useChatStore((state) => state.channels);
   const [v, setV] = useState(() => "");
+  
   return (
     <Box
       display="flex"
@@ -27,7 +27,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({}) => {
         borderRadius="0.375rem"
         bg="whiteAlpha.100"
       >
-        <Textarea
+        <Input
           value={v}
           onChange={(e) => setV(e.target.value)}
           onKeyDown={(e) => {

@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "immutable": "^4.0.0-rc.12",
+    "is-hotkey": "^0.2.0",
+    "slate": "^0.62.1",
+    "slate-history": "^0.62.0",
+    "slate-plain-serializer": "^0.7.13",
+    "slate-react": "^0.62.1"
+  }
+}

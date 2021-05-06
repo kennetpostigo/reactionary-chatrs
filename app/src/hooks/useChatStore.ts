@@ -1,6 +1,47 @@
 import create from "zustand";
 
-const useChatStore = create((set) => ({
+interface Channel {
+  id: string;
+  name: string;
+}
+
+interface Message {
+  id: string;
+  content: string;
+  username: string;
+  channel_id: string;
+}
+
+interface User {
+  id: number;
+  username: string;
+}
+
+export type ChatStore = {
+  me: string;
+  channels: Array<Channel>;
+  messages: { [key: string]: Array<Message> };
+  users: Array<User>;
+  ws: WebSocket;
+  channel: string;
+  actions: {
+    setMe: (me: string) => void;
+    setWS: (ws: WebSocket) => void;
+    setChannel: (channel: string) => void;
+    setChannels: (channels: Array<Channel>) => void;
+    addChannel: (channel: Channel) => void;
+    updateChannel: (channel: Channel) => void;
+    deleteChannel: (id: string) => void;
+    setChannelMessages: (channelMessages: {
+      channel: Channel;
+      messages: Array<Message>;
+    }) => void;
+    addMessage: (msg: { channel: string; message: Message }) => void;
+    updateMessage: (msg: Message) => void;
+  };
+}
+
+const useChatStore = create<ChatStore>((set) => ({
   me: "",
   channels: [],
   users: [],
@@ -9,43 +50,43 @@ const useChatStore = create((set) => ({
   channel: undefined,
   actions: {
     setMe: (me) => set((state) => ({ ...state, me })),
-    setWS: (ws: any) => set((state: any) => ({ ...state, ws })),
-    setChannel: (channel) => set((state) => ({ channel })),
-    setChannels: (channels: any) =>
-      set((state: any) => {
+    setWS: (ws) => set((state) => ({ ...state, ws })),
+    setChannel: (channel) => set((state) => ({ ...state, channel })),
+    setChannels: (channels) =>
+      set((state) => {
         const next = { ...state, channels };
         return next;
       }),
-    addChannel: (channel: any) =>
-      set((state: any) => {
+    addChannel: (channel) =>
+      set((state) => {
         const next = {
           ...state,
           channels: [...state.channels, channel],
         };
         return next;
       }),
-    updateChannel: (channel: any) =>
-      set((state: any) => {
-        const cIdx = state.channels.find((c: any) => c.id === channel.id);
+    updateChannel: (channel) =>
+      set((state) => {
+        const cIdx = state.channels.findIndex((c) => c.id === channel.id);
         if (cIdx === -1) return { channels: state.channels };
         state.channels[cIdx] = channel;
         return { ...state, channels: state.channels };
       }),
-    deleteChannel: (id: any) =>
-      set((state: any) => ({
+    deleteChannel: (id) =>
+      set((state) => ({
         ...state,
-        channels: state.channels.filter((c: any) => c.id === id),
+        channels: state.channels.filter((c) => c.id === id),
       })),
-    setChannelMessages: (msgs: any) =>
-      set((state: any) => {
+    setChannelMessages: (msgs) =>
+      set((state) => {
         const next = {
           ...state,
           messages: { ...state.messages, [msgs.channel.id]: msgs.messages },
         };
         return next;
       }),
-    addMessage: (msg: any) =>
-      set((state: any) => {
+    addMessage: (msg) =>
+      set((state) => {
         const next = {
           ...state,
           messages: {
@@ -58,25 +99,15 @@ const useChatStore = create((set) => ({
         };
         return next;
       }),
-    updateMessage: (msg: any) =>
-      set((state: any) => {
-        const mIdx = state.messages[msg.channel].find(
-          (m: any) => m.id === msg.id
+    updateMessage: (msg) =>
+      set((state) => {
+        const mIdx = state.messages[msg.channel_id].findIndex(
+          (m) => m.id === msg.id
         );
-        if (!mIdx) return state;
-        state.messages[msg.channel][mIdx] = msg;
+        if (mIdx !== -1) return state;
+        state.messages[msg.channel_id][mIdx] = msg;
         return { ...state, messages: { ...state.messages } };
       }),
-    deleteMessage: (msg: any) =>
-      set((state: any) => ({
-        ...state,
-        messages: {
-          ...state.messages,
-          [msg.channel]: state.messages[msg.channel].filter(
-            (m: any) => m.id === msg.id
-          ),
-        },
-      })),
   },
 }));
 

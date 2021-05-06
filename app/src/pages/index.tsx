@@ -3,10 +3,10 @@ import Head from "next/head";
 import Channels from "../components/chat/channels";
 import ChatBox from "../components/chat/chatBox";
 import MessageFeed from "../components/chat/messageFeed";
-import useWebsocket from "../hooks/useWebsocket";
+import useChatSocket from "../hooks/../hooks/useChatSocket";
 
 export default function Home() {
-  useWebsocket();
+  useChatSocket();
   return (
     <Box width="100%" height="100vh">
       <Head>
