@@ -32,7 +32,6 @@ async fn mount_ws(
   wsc: WebSocketConnection,
 ) -> tide::Result<()> {
   while let Some(Ok(WSMessage::Text(string_msg))) = wsc.clone().next().await {
-    println!("{}", string_msg.clone());
     let msg: SockMsg = serde_json::from_str(string_msg.as_str())?;
 
     match msg._type {
@@ -47,14 +46,29 @@ async fn mount_ws(
           handle: wsc.clone(),
         };
         users.push(new_user.clone());
-        wsc
+        let handle = wsc
           .send_json(&json!({
-            "msg": format!("{} has been connected", &new_user.username),
+            "msg": format!("{} has been connected", new_user.clone().username),
             "data": {
               "channels": channels
             }
           }))
-          .await?
+          .await;
+
+        match handle {
+          Ok(_) => (),
+          Err(e) => {
+            let user_index = users
+              .iter()
+              .position(|u| u.username == new_user.clone().username);
+
+            if let Some(idx) = user_index {
+              users.remove(idx);
+            }
+
+            println!("{}", e)
+          }
+        }
       }
       MsgType::NewChannel => {
         let channel =
@@ -75,7 +89,9 @@ async fn mount_ws(
 
           match handle {
             Ok(_) => (),
-            Err(e) => println!("{}", e),
+            Err(e) => {
+              println!("{}", e)
+            }
           }
         }
       }
@@ -87,14 +103,21 @@ async fn mount_ws(
           username: new_user.username,
           handle: wsc.clone(),
         };
-        wsc
+        let handle = wsc
           .send_json(&json!({
             "msg": format!("{} has been connected", &new_user.username),
             "data": {
               "channels": channels
             }
           }))
-          .await?
+          .await;
+
+        match handle {
+          Ok(_) => (),
+          Err(e) => {
+            println!("{}", e)
+          }
+        }
       }
       MsgType::UpdateChannel => {
         let channel =
@@ -115,7 +138,9 @@ async fn mount_ws(
 
           match handle {
             Ok(_) => (),
-            Err(e) => println!("{}", e),
+            Err(e) => {
+              println!("{}", e)
+            }
           }
         }
       }
@@ -124,7 +149,7 @@ async fn mount_ws(
         let messages =
           message::get_channel_messages(channel.id.unwrap(), &req.state().db)
             .await?;
-        wsc
+        let handle = wsc
           .send_json(&json!({
             "msg":
               format!(
@@ -138,7 +163,14 @@ async fn mount_ws(
               }
             }
           }))
-          .await?
+          .await;
+
+        match handle {
+          Ok(_) => (),
+          Err(e) => {
+            println!("{}", e)
+          }
+        }
       }
       MsgType::NewMessage => {
         let new_message = msg.clone().message.unwrap();
@@ -163,7 +195,9 @@ async fn mount_ws(
 
           match handle {
             Ok(_) => (),
-            Err(e) => println!("ERR: {}", e),
+            Err(e) => {
+              println!("{}", e)
+            }
           }
         }
       }
@@ -190,7 +224,9 @@ async fn mount_ws(
 
           match handle {
             Ok(_) => (),
-            Err(e) => println!("{}", e),
+            Err(e) => {
+              println!("{}", e)
+            }
           }
         }
       }
