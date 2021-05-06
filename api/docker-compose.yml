@@ -1,5 +1,14 @@
 version: "3"
 services:
+  api:
+    build: "./api"
+    ports:
+      "8080:8080"
+    volumes: 
+      - "./api:/user/src/api"
+    links:
+      - reactionary_db
+    command: bash -c "bash ./wait-for-it.sh db:5432 -q -- diesel setup && cargo watch -x run"
   reactionary_db:
     container_name: "reactionary-database"
     image: "postgres" # use latest official postgres version
