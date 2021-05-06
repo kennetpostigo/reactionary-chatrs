@@ -1,10 +1,18 @@
-FROM rust
-
-RUN mkdir -p /usr/src/api
-WORKDIR /usr/src/app
-
+# Base Image
+FROM rust as build
 # Copy our app into that directory
-COPY . /usr/src/api
+COPY . .
+
+ENV SQLX_OFFLINE=true
 
 # Build our app
-CMD ["cargo", "build"]
+RUN cargo build --release --verbose
+
+# Base Image
+FROM alpine
+# Copy Files from build
+COPY --from=build ./target/release/api ./api
+# Running on
+EXPOSE 8080
+# Run our app
+CMD api

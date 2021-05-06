@@ -1,17 +1,14 @@
 version: "3"
 services:
   api:
-    bin:
-      build:
-        context: .
-        dockerfile: Dockerfile
-      ports:
-        "8080:8080"
-      volumes: 
-        - "./api:/user/src/api"
-      links:
-        - reactionary_db
-      command: # Need to create a script to run here for setting up pg and app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      "8080:8080"
+    depends_on: 
+      - reactionary_db
+      - reactionary_broker
   reactionary_db:
     container_name: "reactionary-database"
     image: "postgres" # use latest official postgres version
@@ -32,6 +29,3 @@ services:
     volumes:
       - reactionary-broker-data:/var/lib/redis/data/
     command: redis-server
-volumes:
-  reactionary-database-data: # named volumes can be managed easier using docker-compose
-  reactionary-broker-data: # named volumes can be managed easier using docker-compose

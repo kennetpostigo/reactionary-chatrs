@@ -15,10 +15,10 @@ futures = "0.3.14"
 futures-util = "0.3.14"
 jsonwebtoken = "7.2.0"
 lazy_static = "1.4.0"
-redis = { version = "0.20.0", features = ["async-std-comp"] }
+# redis = { version = "0.20.0", features = ["async-std-comp"] }
 serde = "1.0.125"
 serde_json = "1.0.64"
-sqlx = { version = "0.5.2", features = [ "runtime-async-std-native-tls", "postgres", "chrono", "migrate", "uuid", "json" ] }
+sqlx = { version = "0.5.2", features = [ "runtime-async-std-native-tls", "postgres", "chrono", "migrate", "uuid", "json", "offline" ] }
 tide = "0.16.0"
 tide-websockets = "0.3.0"
 uuid ={ version = "0.8.2", features = [ "serde" ]}
